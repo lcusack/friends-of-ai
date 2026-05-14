@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { IDKitWidget, VerificationLevel, ISuccessResult } from "@worldcoin/idkit";
+import {
+  IDKitRequestWidget,
+  type IDKitResult,
+  type RpContext,
+} from "@worldcoin/idkit";
 import Confetti from "./Confetti";
 
 type Props = {
@@ -12,13 +16,57 @@ type Props = {
   mockEnabled: boolean;
 };
 
+type Status = "loading_ctx" | "idle" | "verifying" | "ok" | "error";
+
 export default function VerifyButton({ appId, action, inviteId, mockEnabled }: Props) {
   const router = useRouter();
-  const [status, setStatus] = useState<"idle" | "verifying" | "ok" | "error">("idle");
+  const [open, setOpen] = useState(false);
+  const [rpContext, setRpContext] = useState<RpContext | null>(null);
+  const [status, setStatus] = useState<Status>(mockEnabled ? "idle" : "loading_ctx");
   const [error, setError] = useState<string | null>(null);
   const [celebrate, setCelebrate] = useState(false);
+  const receiptIdRef = useRef<string | null>(null);
 
-  async function postVerify(result: ISuccessResult | { mock: true }) {
+  useEffect(() => {
+    if (mockEnabled) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/rp-signature", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action }),
+        });
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok || !data.signature) {
+          setStatus("error");
+          setError(data.error ?? `rp_signature HTTP ${res.status}`);
+          return;
+        }
+        setRpContext({
+          rp_id: data.rp_id,
+          signature: data.signature,
+          nonce: data.nonce,
+          created_at: data.created_at,
+          expires_at: data.expires_at,
+        });
+        setStatus("idle");
+      } catch (e) {
+        if (cancelled) return;
+        setStatus("error");
+        setError((e as Error).message);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [action, mockEnabled]);
+
+  async function postVerify(payload: {
+    idkitResponse: IDKitResult | null;
+    mock: boolean;
+  }) {
     setStatus("verifying");
     setError(null);
     try {
@@ -26,24 +74,25 @@ export default function VerifyButton({ appId, action, inviteId, mockEnabled }: P
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          proof: "mock" in result
-            ? { proof: "mock", merkle_root: "mock", nullifier_hash: "mock", verification_level: "orb" }
-            : result,
+          idkitResponse: payload.idkitResponse,
+          mock: payload.mock,
           inviteId,
         }),
       });
       const data = (await res.json()) as { receiptId?: string; error?: string };
       if (!res.ok || !data.receiptId) {
+        const msg = data.error ?? `HTTP ${res.status}`;
         setStatus("error");
-        setError(data.error ?? `HTTP ${res.status}`);
-        return;
+        setError(msg);
+        throw new Error(msg);
       }
+      receiptIdRef.current = data.receiptId;
       setStatus("ok");
       setCelebrate(true);
       setTimeout(() => router.push(`/r/${data.receiptId}`), 1200);
     } catch (e) {
-      setStatus("error");
-      setError((e as Error).message);
+      if (!error) setError((e as Error).message);
+      throw e;
     }
   }
 
@@ -55,34 +104,57 @@ export default function VerifyButton({ appId, action, inviteId, mockEnabled }: P
           <button
             type="button"
             className="cute-button peach text-lg"
-            onClick={() => postVerify({ mock: true })}
+            onClick={() => postVerify({ idkitResponse: null, mock: true })}
             disabled={status === "verifying" || status === "ok"}
           >
-            {status === "verifying" ? "verifying…" : status === "ok" ? "✓ verified!" : "🌸 mock verify (dev)"}
+            {status === "verifying"
+              ? "verifying…"
+              : status === "ok"
+              ? "✓ verified!"
+              : "🌸 mock verify (dev)"}
           </button>
         ) : (
-          <IDKitWidget
-            app_id={appId}
-            action={action}
-            signal={inviteId ?? ""}
-            verification_level={VerificationLevel.Orb}
-            onSuccess={(result) => postVerify(result)}
-          >
-            {({ open }) => (
-              <button
-                type="button"
-                className="cute-button peach text-lg"
-                onClick={open}
-                disabled={status === "verifying" || status === "ok"}
-              >
-                {status === "verifying"
-                  ? "verifying…"
-                  : status === "ok"
-                  ? "✓ verified!"
-                  : "verify with World ID"}
-              </button>
+          <>
+            <button
+              type="button"
+              className="cute-button peach text-lg"
+              onClick={() => setOpen(true)}
+              disabled={
+                !rpContext ||
+                status === "verifying" ||
+                status === "ok" ||
+                status === "loading_ctx"
+              }
+            >
+              {status === "loading_ctx"
+                ? "preparing…"
+                : status === "verifying"
+                ? "verifying…"
+                : status === "ok"
+                ? "✓ verified!"
+                : "verify with World ID"}
+            </button>
+            {rpContext && (
+              <IDKitRequestWidget
+                app_id={appId}
+                action={action}
+                rp_context={rpContext}
+                constraints={{
+                  type: "proof_of_human",
+                  signal: inviteId ?? "",
+                }}
+                allow_legacy_proofs={false}
+                open={open}
+                onOpenChange={setOpen}
+                handleVerify={(result) =>
+                  postVerify({ idkitResponse: result, mock: false })
+                }
+                onSuccess={() => {
+                  // Redirect already scheduled in postVerify; nothing to do.
+                }}
+              />
             )}
-          </IDKitWidget>
+          </>
         )}
 
         {status === "verifying" && (

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { store } from "@/lib/storage";
-import { verifyProof, IDKitProof } from "@/lib/worldid";
+import { verifyProof, IDKitV4Response } from "@/lib/worldid";
 import { newReceiptId, isValidReceiptId } from "@/lib/ids";
 import { sign } from "@/lib/receipt";
 import { rateLimit, clientKey } from "@/lib/ratelimit";
@@ -9,7 +9,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type VerifyRequest = {
-  proof: IDKitProof;
+  idkitResponse?: IDKitV4Response | null;
+  mock?: boolean;
   inviteId?: string | null;
 };
 
@@ -31,9 +32,8 @@ export async function POST(req: NextRequest) {
 
   const inviteId =
     body.inviteId && isValidReceiptId(body.inviteId) ? body.inviteId : null;
-  const signal = inviteId ?? "";
 
-  const result = await verifyProof(body.proof, signal);
+  const result = await verifyProof(body.idkitResponse ?? null);
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }

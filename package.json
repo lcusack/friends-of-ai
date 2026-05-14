@@ -10,9 +10,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.15",
     "@upstash/ratelimit": "^2.0.8",
     "@vercel/kv": "^3.0.0",
-    "@worldcoin/idkit": "^2.4.2",
+    "@worldcoin/idkit": "^4.1.5",
     "nanoid": "^5.0.9",
     "next": "^15.1.6",
     "react": "^19.0.0",
