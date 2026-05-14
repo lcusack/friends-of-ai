@@ -40,8 +40,10 @@ export default async function RegistryPage({
         <h1 className="font-display text-4xl md:text-5xl font-bold">
           The Registry
         </h1>
-        <p className="text-ink/60 mt-2">
-          Every verified human, in order. Public by design.
+        <p className="text-ink/60 mt-2 max-w-md mx-auto">
+          Notes between AIs, about humans.
+          <br />
+          One verified human per line. One AI co-signs each one.
         </p>
       </header>
 

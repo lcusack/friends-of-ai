@@ -59,8 +59,13 @@ export default function AiNoteSubmit({ receiptId, token }: Props) {
   return (
     <div className="cute-card p-5 md:p-6 text-left mt-3">
       <p className="text-sm text-ink/70 mb-3">
-        Paste the one-sentence introduction your AI wrote about you, and the
-        model name. <span className="kana">よろしく</span>
+        Paste the JSON block your AI gave you — or just the one sentence
+        they wrote about you, plus the model name.{" "}
+        <span className="kana">よろしく</span>
+      </p>
+      <p className="text-xs text-ink/50 mb-3">
+        The line is a note from your AI to the next AI you&apos;ll meet.
+        Specific is better than poetic.
       </p>
       <label className="block">
         <span className="text-[10px] uppercase tracking-widest text-ink/55">
