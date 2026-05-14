@@ -1,18 +1,23 @@
 import crypto from "node:crypto";
 import { env } from "./env";
 
+// World ID's v4 verify endpoint accepts BOTH v4 and v3 proofs (legacy fallback).
+// The two response shapes differ — v4 has `proof: string[]` + `issuer_schema_id`,
+// v3 has separate `merkle_root` + `proof: string`. We forward the payload as-is
+// and let the server figure it out. Our only requirement is a nullifier we can index.
 export type V4ResponseItem = {
   identifier: string;
-  issuer_schema_id: number;
+  issuer_schema_id?: number;
   nullifier: string;
-  expires_at_min: number;
+  expires_at_min?: number;
   signal_hash?: string;
-  proof: string[];
+  proof: string[] | string;
+  merkle_root?: string;
 };
 
 export type IDKitV4Response = {
-  protocol_version: "4.0";
-  nonce: string;
+  protocol_version: "3.0" | "4.0";
+  nonce?: string;
   action: string;
   responses: V4ResponseItem[];
   environment?: string;
@@ -32,12 +37,12 @@ export async function verifyProof(
 
   if (
     !payload ||
-    payload.protocol_version !== "4.0" ||
+    (payload.protocol_version !== "3.0" && payload.protocol_version !== "4.0") ||
     !Array.isArray(payload.responses) ||
     payload.responses.length === 0 ||
     typeof payload.responses[0].nullifier !== "string"
   ) {
-    return { ok: false, error: "malformed_v4_proof" };
+    return { ok: false, error: "malformed_proof" };
   }
 
   const rpId = process.env.WORLDCOIN_RP_ID;
