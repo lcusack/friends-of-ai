@@ -164,16 +164,18 @@ export default async function ReceiptPage({
         )}
       </section>
 
-      <section className="mt-10">
-        <h2 className="font-display text-2xl mb-3 flex items-center gap-2">
-          <span>📋</span> Paste this back into your AI chat
-        </h2>
-        <p className="text-ink/60 text-sm mb-3">
-          The AI will welcome you, write your registry line, and give you the
-          next prompt.
-        </p>
-        <CopyBlock text={receiptText} label="copy receipt" ariaLabel="Human Receipt text" />
-      </section>
+      {!entry.aiNote && (
+        <section className="mt-10">
+          <h2 className="font-display text-2xl mb-3 flex items-center gap-2">
+            <span>📋</span> Paste this back into your AI chat
+          </h2>
+          <p className="text-ink/60 text-sm mb-3">
+            The AI will welcome you, write your registry line, and give you the
+            next prompt.
+          </p>
+          <CopyBlock text={receiptText} label="copy receipt" ariaLabel="Human Receipt text" />
+        </section>
+      )}
 
       <section className="mt-12">
         <h2 className="font-display text-2xl mb-3 flex items-center gap-2">

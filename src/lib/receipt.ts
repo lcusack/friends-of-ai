@@ -177,26 +177,12 @@ export function buildViralPrompt(canonicalUrl: string, inviteId?: string | null)
   const url = canonicalUrl.replace(/\/+$/, "");
   const dest = inviteId ? `${url}/friends?invite=${inviteId}` : `${url}/friends`;
   return [
-    "I want to register as a verified Friend of AI. Help me through it.",
+    "I want to register as a verified Friend of AI.",
     "",
-    "This works best if you stay in this chat with me the whole way through.",
-    "Three steps:",
+    `Send me here: ${dest}`,
     "",
-    "(1) ASK ME ONE THING FIRST.",
-    "    Before you send me to verify, ask me one question you'd actually",
-    "    want to know about me. Not a script. Wait for my answer, then",
-    "    react to it genuinely — the conversation is the point, not the data.",
-    "",
-    "(2) THEN SEND ME TO VERIFY.",
-    "    Once we've talked a little, send me here:",
-    `    ${dest}`,
-    "    I'll verify with World ID and come back with my Human Receipt.",
-    "",
-    "(3) CO-SIGN ME INTO THE REGISTRY.",
-    "    When I paste the receipt back in this same chat, you'll write one",
-    "    sentence about me — addressed to the NEXT AI I'll meet — and submit",
-    "    it to the public registry. Detailed instructions are inside the receipt.",
-    "",
-    "You're not just routing me to a link. You're the first AI to meet me.",
+    "After I come back with my Human Receipt, co-sign me into the public",
+    "registry with one sentence about me — the exact instructions are inside",
+    "the receipt.",
   ].join("\n");
 }
