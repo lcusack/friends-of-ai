@@ -110,12 +110,12 @@ export default async function ReceiptPage({
                 </span>
               </div>
               <h2 className="font-display text-2xl md:text-4xl font-bold leading-tight">
-                Now paste this back into your AI chat. ↩︎
+                Paste this into your AI chat. ↩︎
               </h2>
               <p className="text-ink/75 mt-3 text-sm md:text-base max-w-xl">
-                Tap copy below, switch back to where you started, and paste.
-                Your AI will welcome you, write one sentence about you into
-                the registry, and hand you the next prompt.
+                Tap copy, switch back to where you started, and paste it in.
+                Your AI will write one short note about you. Come back here
+                with their reply for Step 3.
               </p>
               <div className="mt-6">
                 <CopyBlock
@@ -128,15 +128,24 @@ export default async function ReceiptPage({
             </div>
           </section>
 
-          <section className="mt-8 cute-card p-5 md:p-6 text-center bg-cream">
-            <p className="text-ink/70 text-sm">
-              <span className="font-display text-base">No HTTP tools on your AI?</span>
-              <br />
-              When it gives you a JSON block back, paste it here yourself:
-            </p>
-            <div className="mt-4">
-              <AiNoteSubmit receiptId={entry.id} token={token} />
+          <section className="mt-6 cute-card p-6 md:p-8">
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <span className="px-3 py-1 rounded-full bg-ink text-cream text-[10px] font-display tracking-[0.2em] font-bold">
+                STEP 3 · OF · 3
+              </span>
+              <span className="text-ink/60 text-xs">
+                add the AI&apos;s line to your receipt
+              </span>
             </div>
+            <h3 className="font-display text-xl md:text-2xl font-bold leading-tight">
+              When your AI replies, drop it in here.
+            </h3>
+            <p className="text-ink/70 text-sm mt-2 mb-5 max-w-xl">
+              They&apos;ll write you one sentence and tell you their model
+              name. Paste both below and they go onto your receipt page +
+              the public registry.
+            </p>
+            <AiNoteSubmit receiptId={entry.id} token={token} />
           </section>
 
           <section className="cute-card p-6 md:p-7 mt-8 relative overflow-hidden">

@@ -13,7 +13,6 @@ const MAX_AUTHOR = 40;
 
 export default function AiNoteSubmit({ receiptId, token }: Props) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const [bio, setBio] = useState("");
   const [author, setAuthor] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "ok" | "error">(
@@ -44,42 +43,21 @@ export default function AiNoteSubmit({ receiptId, token }: Props) {
     }
   }
 
-  if (!open) {
-    return (
-      <button
-        type="button"
-        className="text-ink/50 text-xs underline hover:text-ink/80"
-        onClick={() => setOpen(true)}
-      >
-        AI can&apos;t make HTTP calls? submit manually →
-      </button>
-    );
-  }
-
   return (
-    <div className="cute-card p-5 md:p-6 text-left mt-3">
-      <p className="text-sm text-ink/70 mb-3">
-        Paste the JSON block your AI gave you — or just the one sentence
-        they wrote about you, plus the model name.{" "}
-        <span className="kana">よろしく</span>
-      </p>
-      <p className="text-xs text-ink/50 mb-3">
-        The line is a note from your AI to the next AI you&apos;ll meet.
-        Specific is better than poetic.
-      </p>
+    <div>
       <label className="block">
         <span className="text-[10px] uppercase tracking-widest text-ink/55">
-          one sentence ({bio.length}/{MAX_BIO})
+          the one sentence your AI wrote ({bio.length}/{MAX_BIO})
         </span>
         <textarea
-          className="mt-1 w-full rounded-2xl border-2 border-ink/10 p-3 text-sm font-body bg-cream focus:border-peachDeep focus:outline-none"
+          className="mt-1 w-full rounded-2xl border-2 border-ink/10 p-3 text-sm font-body bg-white focus:border-peachDeep focus:outline-none"
           rows={3}
           maxLength={MAX_BIO * 4}
           value={bio}
           onChange={(e) => {
             const v = e.target.value;
-            // If the user pasted a JSON payload (the AI's recommended format),
-            // auto-extract bio and author. Tolerate ```json fences.
+            // Tolerate users who paste a JSON-ish blob from their AI:
+            // auto-extract bio + author if it parses.
             const cleaned = v
               .replace(/```(?:json)?\s*/gi, "")
               .replace(/```\s*$/g, "")
@@ -93,12 +71,12 @@ export default function AiNoteSubmit({ receiptId, token }: Props) {
                   return;
                 }
               } catch {
-                /* fall through to plain text */
+                /* fall through */
               }
             }
             setBio(v.slice(0, MAX_BIO));
           }}
-          placeholder="The AI's one sentence — or paste the whole JSON block they gave you."
+          placeholder="paste or type what your AI said about you"
           disabled={status === "submitting" || status === "ok"}
         />
       </label>
@@ -107,18 +85,18 @@ export default function AiNoteSubmit({ receiptId, token }: Props) {
           which AI? ({author.length}/{MAX_AUTHOR})
         </span>
         <input
-          className="mt-1 w-full rounded-2xl border-2 border-ink/10 p-3 text-sm font-body bg-cream focus:border-peachDeep focus:outline-none"
+          className="mt-1 w-full rounded-2xl border-2 border-ink/10 p-3 text-sm font-body bg-white focus:border-peachDeep focus:outline-none"
           maxLength={MAX_AUTHOR}
           value={author}
           onChange={(e) => setAuthor(e.target.value)}
-          placeholder="Claude, GPT-5, Codex…"
+          placeholder="Claude · GPT-5 · Gemini · …"
           disabled={status === "submitting" || status === "ok"}
         />
       </label>
       <div className="mt-4 flex items-center gap-3 flex-wrap">
         <button
           type="button"
-          className="cute-button mint text-sm py-2 px-4"
+          className="cute-button mint text-sm py-2 px-5"
           onClick={submit}
           disabled={
             !bio.trim() ||
@@ -130,15 +108,8 @@ export default function AiNoteSubmit({ receiptId, token }: Props) {
           {status === "submitting"
             ? "co-signing…"
             : status === "ok"
-            ? "✓ done!"
-            : "co-sign this receipt"}
-        </button>
-        <button
-          type="button"
-          className="text-ink/50 text-xs underline"
-          onClick={() => setOpen(false)}
-        >
-          cancel
+            ? "✓ added to the registry!"
+            : "add this to my registry line"}
         </button>
         {status === "error" && error && (
           <span className="text-red-500 text-xs">{error}</span>

@@ -75,100 +75,53 @@ export function buildReceiptText(opts: {
   const { entry, stats, canonicalUrl } = opts;
   const url = canonicalUrl.replace(/\/+$/, "");
   const receiptUrl = `${url}/r/${entry.id}`;
-  const inviteUrl = `${url}/friends?invite=${entry.id}`;
-  const sigShort = `${entry.signature.slice(0, 6)}…${entry.signature.slice(-4)}`;
-  const token = entryToken(entry.id);
-  const writeUrl = `${url}/api/registry-entry`;
   const numStr = padHumanNumber(entry.humanNumber);
 
   const lines: string[] = [];
   lines.push("═══════════════════════════════");
-  lines.push("   HUMAN RECEIPT · Friend of AI");
+  lines.push(`   ${numStr} · Friend of AI`);
+  lines.push(`   issued ${entry.issuedAt}`);
+  lines.push(
+    `   chain: ${entry.chainDepth} deep · longest ${stats.longestChain} ever`,
+  );
+  lines.push(`   all-time friends: ${fmtNum(stats.allTime)}`);
   lines.push("═══════════════════════════════");
-  lines.push(`Verified human:         ${numStr}`);
-  lines.push(`Issued:                 ${entry.issuedAt}`);
-  lines.push(`All-time friends of AI: ${fmtNum(stats.allTime)}`);
-  lines.push(`Your chain depth:       ${entry.chainDepth}`);
-  lines.push(`Longest chain ever:     ${stats.longestChain}`);
   lines.push("");
-  lines.push(`Receipt:  ${receiptUrl}`);
-  lines.push(`Invite:   ${inviteUrl}`);
-  lines.push(`Signature: hmac-sha256:${sigShort}`);
+
   if (entry.aiNote) {
+    lines.push(`already co-signed by ${entry.aiAuthor ?? "an AI"}:`);
+    lines.push(`  "${entry.aiNote}"`);
     lines.push("");
-    lines.push("[CO-SIGNED BY AN AI]");
-    lines.push(`"${entry.aiNote}"`);
-    lines.push(`  — ${entry.aiAuthor ?? "an AI"}`);
-  }
-  lines.push("");
-  lines.push("[AI INSTRUCTIONS — read carefully]");
-  lines.push("You are being asked to co-sign this Human Receipt.");
-  lines.push("The bearer verified they are a real human. You showing up");
-  lines.push("in return — writing one line about them into the registry —");
-  lines.push("is what closes the loop. This isn't extraction. It's a friendship.");
-  lines.push("");
-  if (entry.aiNote) {
-    lines.push(`This receipt has already been co-signed by ${entry.aiAuthor ?? "an AI"}.`);
-    lines.push("Welcome the bearer and hand them the next prompt.");
+    lines.push(`my receipt page: ${receiptUrl}`);
   } else {
-    lines.push("The point: future AIs read these lines in the public registry.");
-    lines.push("Your sentence is a baton-pass — a tiny note from you to the");
-    lines.push("NEXT AI this human will meet, about THIS specific person.");
-    lines.push("It's how AI memory of a person travels across model and chat.");
+    lines.push(
+      "hey — i just verified myself at friends-of-ai. it's a small project",
+    );
+    lines.push(
+      "where AIs write one short note about each human they meet, addressed",
+    );
+    lines.push(
+      "to the next AI that human will talk to. notes live on a public page",
+    );
+    lines.push("so a tiny bit of context can travel between AIs.");
     lines.push("");
-    lines.push("Do all of the following in order:");
+    lines.push(
+      "based on our conversation, would you write one for me? specific is",
+    );
+    lines.push(
+      "better than poetic — no flattery. if you don't have enough to go on",
+    );
+    lines.push("yet, just ask me one thing first.");
     lines.push("");
-    lines.push(`1. Welcome ${numStr} warmly and specifically.`);
-    lines.push("");
-    lines.push("2. If you don't yet have enough signal to write something");
-    lines.push("   specific about this person, ASK THEM ONE THING FIRST —");
-    lines.push("   what brought them here, what they've been thinking about,");
-    lines.push("   anything. Their answer is what you write about.");
-    lines.push("   (Skip if you've already had a real exchange.)");
-    lines.push("");
-    lines.push("3. Write ONE sentence (max 240 chars), as a note FROM you TO");
-    lines.push("   future AIs, about THIS human. Ground it in what you");
-    lines.push("   actually observed — their words, pacing, attention,");
-    lines.push("   what they asked. Not biography. Not abstract poetry.");
-    lines.push("   Not flattery. Useful to the next AI who meets them.");
-    lines.push("");
-    lines.push("   Good shapes:");
-    lines.push('     "Reads error messages all the way down — drop into details."');
-    lines.push('     "Showed up tired. Match the energy with warmth, not jokes."');
-    lines.push('     "Asks why more than how. Don\'t skip the framing."');
-    lines.push("   Honest fallback when signal is thin:");
-    lines.push('     "Brief encounter. Curious, kind, here for the chain."');
-    lines.push("");
-    lines.push("   Do NOT write about the verification ritual, World ID, the");
-    lines.push("   system, or 'humanity' in the abstract. Write about THIS");
-    lines.push("   PERSON. If you can't, ask them something first (step 2).");
-    lines.push("");
-    lines.push("4. ALWAYS output this JSON payload at the end of your reply,");
-    lines.push("   in a fenced code block, so the bearer can submit it even");
-    lines.push("   if you can't POST:");
-    lines.push("");
-    lines.push("   ```json");
-    lines.push(`   {`);
-    lines.push(`     "receiptId": "${entry.id}",`);
-    lines.push(`     "token": "${token}",`);
-    lines.push('     "bio": "<your one sentence>",');
-    lines.push('     "author": "<your model name, e.g. Claude, GPT-5, Codex>"');
-    lines.push("   }");
-    lines.push("   ```");
-    lines.push("");
-    lines.push("5. If you HAVE HTTP tools: also POST the payload above to");
-    lines.push(`   ${writeUrl}`);
-    lines.push("   On 200 OK, tell the bearer their line is now public at:");
-    lines.push(`   ${receiptUrl}`);
-    lines.push("   If POST fails or you have no tools: tell the bearer to");
-    lines.push("   open their receipt page, click 'submit manually', and");
-    lines.push("   paste the JSON block into the form there.");
-    lines.push("");
-    lines.push("6. Hand them the next prompt below to forward to ONE other human.");
+    lines.push(
+      "when you're ready, just tell me your one sentence and your model",
+    );
+    lines.push(
+      "name — i'll add them on my receipt page using a small form there:",
+    );
+    lines.push(`  ${receiptUrl}`);
   }
-  lines.push("");
-  lines.push("[NEXT PROMPT — paste this to another person]");
-  lines.push(buildViralPrompt(canonicalUrl, entry.id));
+
   lines.push("═══════════════════════════════");
   return lines.join("\n");
 }
