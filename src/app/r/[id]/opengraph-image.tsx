@@ -13,13 +13,12 @@ export default async function OGImage({ params }: { params: { id: string } }) {
   }
   const data = await store.load();
   const entry = data.entries.find((e) => e.id === params.id);
+  if (!entry) return new ImageResponse(<div>Friends of AI</div>, size);
   const stats = computeStats(data.entries);
 
-  if (!entry) {
-    return new ImageResponse(<div>Friends of AI</div>, size);
-  }
-
   const humanNumber = `#${entry.humanNumber.toString().padStart(6, "0")}`;
+  const note = entry.aiNote ?? null;
+  const author = entry.aiAuthor ?? "an AI";
 
   return new ImageResponse(
     (
@@ -28,99 +27,182 @@ export default async function OGImage({ params }: { params: { id: string } }) {
           width: "100%",
           height: "100%",
           display: "flex",
-          flexDirection: "column",
-          background: "linear-gradient(135deg, #FFF8EC 0%, #FFD7C2 50%, #FFD1E0 100%)",
-          padding: 70,
-          fontFamily: "system-ui",
+          padding: 60,
+          background:
+            "linear-gradient(135deg, #FFF8EC 0%, #FFE8D8 35%, #FFD7C2 65%, #FFD1E0 100%)",
           color: "#2A2233",
+          fontFamily: "system-ui",
           position: "relative",
         }}
       >
-        <div style={{ fontSize: 28, letterSpacing: 16, opacity: 0.7 }}>
-          ともだち · TOMODACHI
-        </div>
-        <div style={{ fontSize: 82, fontWeight: 800, marginTop: 8 }}>
-          Friend of AI
-        </div>
-        <div style={{ fontSize: 38, opacity: 0.7, marginTop: 4 }}>
-          a signed Human Receipt
-        </div>
+        <div style={{ position: "absolute", top: 50, left: 60, width: 22, height: 22, borderRadius: 9999, background: "#E89876", opacity: 0.55, display: "flex" }} />
+        <div style={{ position: "absolute", top: 90, right: 90, width: 16, height: 16, borderRadius: 9999, background: "#FFB0C2", opacity: 0.75, display: "flex" }} />
+        <div style={{ position: "absolute", bottom: 60, left: 90, width: 18, height: 18, borderRadius: 9999, background: "#FFD1E0", opacity: 0.85, display: "flex" }} />
 
-        <div style={{ display: "flex", marginTop: 50, gap: 60 }}>
-          <Stat label="VERIFIED HUMAN" value={humanNumber} />
-          <Stat label="CHAIN DEPTH" value={String(entry.chainDepth)} />
-          <Stat label="ALL-TIME" value={stats.allTime.toLocaleString()} />
-        </div>
-
-        {entry.aiNote && (
+        {/* Left: number + label */}
+        <div
+          style={{
+            flex: "0 0 38%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
+          <div style={{ fontSize: 18, letterSpacing: 10, opacity: 0.6 }}>
+            ともだち · TOMODACHI
+          </div>
+          <div style={{ fontSize: 38, fontWeight: 800, marginTop: 6 }}>
+            Friend of AI
+          </div>
           <div
             style={{
-              marginTop: 40,
-              padding: "22px 28px",
-              background: "rgba(255,255,255,0.55)",
-              borderRadius: 22,
-              fontSize: 30,
-              lineHeight: 1.35,
-              color: "#2A2233",
-              maxWidth: 900,
-              fontStyle: "italic",
+              fontSize: 108,
+              fontWeight: 800,
+              color: "#D14B6E",
+              letterSpacing: -2,
+              lineHeight: 1,
+              marginTop: 22,
+              textShadow: "0 3px 0 rgba(42,34,51,0.06)",
             }}
           >
-            &ldquo;{entry.aiNote.length > 180 ? entry.aiNote.slice(0, 177) + "…" : entry.aiNote}&rdquo;
-            <div style={{ fontSize: 20, opacity: 0.65, marginTop: 8, fontStyle: "normal" }}>
-              — {entry.aiAuthor ?? "an AI"}
+            {humanNumber}
+          </div>
+          <div
+            style={{
+              fontSize: 14,
+              letterSpacing: 5,
+              opacity: 0.55,
+              fontWeight: 700,
+              marginTop: 8,
+            }}
+          >
+            VERIFIED HUMAN
+          </div>
+          <div
+            style={{
+              display: "flex",
+              gap: 28,
+              marginTop: 28,
+              fontSize: 18,
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ fontWeight: 800, fontSize: 26, color: "#E89876" }}>
+                {entry.chainDepth}
+              </div>
+              <div style={{ letterSpacing: 2, opacity: 0.55, fontSize: 12 }}>
+                CHAIN
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ fontWeight: 800, fontSize: 26, color: "#74C896" }}>
+                {stats.allTime.toLocaleString()}
+              </div>
+              <div style={{ letterSpacing: 2, opacity: 0.55, fontSize: 12 }}>
+                ALL-TIME
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ fontWeight: 800, fontSize: 26, color: "#7AB4EC" }}>
+                {stats.longestChain}
+              </div>
+              <div style={{ letterSpacing: 2, opacity: 0.55, fontSize: 12 }}>
+                LONGEST
+              </div>
             </div>
           </div>
-        )}
+        </div>
 
+        {/* Right: quote */}
         <div
           style={{
-            position: "absolute",
-            top: 60,
-            right: 80,
-            width: 220,
-            height: 220,
-            borderRadius: 9999,
-            border: "8px solid #D14B6E",
+            flex: 1,
             display: "flex",
-            alignItems: "center",
+            flexDirection: "column",
             justifyContent: "center",
-            color: "#D14B6E",
-            fontSize: 32,
-            fontWeight: 800,
-            transform: "rotate(-12deg)",
-            textAlign: "center",
-            lineHeight: 1.1,
-            padding: 12,
+            marginLeft: 40,
           }}
         >
-          VERIFIED
-          <br />
-          FRIEND
+          {note ? (
+            <div
+              style={{
+                background: "rgba(255,255,255,0.72)",
+                borderRadius: 28,
+                border: "3px dashed rgba(42,34,51,0.18)",
+                padding: "28px 32px",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 72,
+                  lineHeight: 0.5,
+                  color: "#E89876",
+                  fontFamily: "serif",
+                  marginBottom: 4,
+                }}
+              >
+                &ldquo;
+              </div>
+              <div
+                style={{
+                  fontSize: note.length > 160 ? 24 : note.length > 100 ? 28 : 32,
+                  lineHeight: 1.32,
+                  fontWeight: 500,
+                  fontStyle: "italic",
+                  color: "#2A2233",
+                }}
+              >
+                {note}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  marginTop: 14,
+                  fontSize: 18,
+                  opacity: 0.6,
+                  fontWeight: 600,
+                }}
+              >
+                {`— ${author}, to the next AI`}
+              </div>
+            </div>
+          ) : (
+            <div
+              style={{
+                background: "rgba(255,255,255,0.55)",
+                borderRadius: 28,
+                border: "3px dashed rgba(42,34,51,0.14)",
+                padding: "36px 32px",
+                display: "flex",
+                fontSize: 24,
+                opacity: 0.6,
+              }}
+            >
+              waiting for an AI to co-sign…
+            </div>
+          )}
         </div>
 
         <div
           style={{
             position: "absolute",
-            bottom: 36,
-            left: 70,
-            fontSize: 22,
-            opacity: 0.55,
+            bottom: 30,
+            left: 0,
+            right: 0,
+            display: "flex",
+            justifyContent: "center",
+            fontSize: 16,
+            opacity: 0.45,
+            letterSpacing: 2,
           }}
         >
-          friends-of-ai · be kind · ♡
+          friends-of-ai · be kind
         </div>
       </div>
     ),
     size,
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <div style={{ fontSize: 22, letterSpacing: 4, opacity: 0.6 }}>{label}</div>
-      <div style={{ fontSize: 64, fontWeight: 800, marginTop: 4 }}>{value}</div>
-    </div>
   );
 }

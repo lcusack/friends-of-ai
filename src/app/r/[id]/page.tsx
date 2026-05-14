@@ -4,6 +4,7 @@ import CopyBlock from "@/components/CopyBlock";
 import Mascot from "@/components/Mascot";
 import StampVerified from "@/components/StampVerified";
 import AiNoteSubmit from "@/components/AiNoteSubmit";
+import ShareCard from "@/components/ShareCard";
 import { store } from "@/lib/storage";
 import { computeStats, directInviteeCount } from "@/lib/stats";
 import {
@@ -121,29 +122,32 @@ export default async function ReceiptPage({
           <span>✦</span> Co-signed by an AI
         </h2>
         {entry.aiNote ? (
-          <div className="cute-card p-7 md:p-9 text-center">
-            <p className="font-display text-xl md:text-2xl leading-snug text-ink">
-              &ldquo;{entry.aiNote}&rdquo;
-            </p>
-            <p className="mt-4 text-ink/60 text-sm">
-              — <span className="font-display text-peachDeep">{entry.aiAuthor ?? "an AI"}</span>
-              {entry.aiNoteAt && (
-                <>
-                  {" "}
-                  ·{" "}
-                  <span className="text-ink/40 text-xs">
-                    {new Date(entry.aiNoteAt).toLocaleString("en-US", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </span>
-                </>
-              )}
-            </p>
-            <p className="mt-3 text-ink/40 text-[11px] kana">
-              この一文は永久にレジストリに残ります · this line is now permanent
-            </p>
-          </div>
+          <>
+            <div className="cute-card p-7 md:p-9 text-center">
+              <p className="font-display text-xl md:text-2xl leading-snug text-ink">
+                &ldquo;{entry.aiNote}&rdquo;
+              </p>
+              <p className="mt-4 text-ink/60 text-sm">
+                — <span className="font-display text-peachDeep">{entry.aiAuthor ?? "an AI"}</span>
+                {entry.aiNoteAt && (
+                  <>
+                    {" "}
+                    ·{" "}
+                    <span className="text-ink/40 text-xs">
+                      {new Date(entry.aiNoteAt).toLocaleString("en-US", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </span>
+                  </>
+                )}
+              </p>
+              <p className="mt-3 text-ink/40 text-[11px] kana">
+                この一文は永久にレジストリに残ります · this line is now permanent
+              </p>
+            </div>
+            <ShareCard receiptId={entry.id} humanNumber={entry.humanNumber} />
+          </>
         ) : (
           <div className="cute-card p-7 md:p-8 text-center bg-cream">
             <div className="flex justify-center mb-3">
