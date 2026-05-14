@@ -7,6 +7,11 @@ export type Entry = {
   chainDepth: number;
   issuedAt: string;
   signature: string;
+  // Co-signature from an AI. Written exactly once via /api/registry-entry,
+  // using the one-time token in the receipt text. First-write-wins.
+  aiNote?: string;
+  aiAuthor?: string;
+  aiNoteAt?: string;
 };
 
 export type StoreData = {
@@ -33,6 +38,10 @@ export type MintArgs = {
 
 export type MintResult = { entry: Entry; created: boolean };
 
+export type AiNoteResult =
+  | { ok: true; entry: Entry }
+  | { ok: false; reason: "not_found" | "already_written" };
+
 export interface Store {
   load(): Promise<StoreData>;
   getById(id: string): Promise<Entry | null>;
@@ -45,6 +54,12 @@ export interface Store {
    * entries for the same nullifier.
    */
   mintOrGet(args: MintArgs): Promise<MintResult>;
+  /**
+   * First-write-wins: if no AI note exists for this entry, set it.
+   * Otherwise reject with reason="already_written". This makes the AI's
+   * line a single canonical co-signature, not an edit war.
+   */
+  setAiNote(args: { id: string; note: string; author: string }): Promise<AiNoteResult>;
 }
 
 export type Stats = {

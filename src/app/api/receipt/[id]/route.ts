@@ -41,6 +41,9 @@ export async function GET(
       chainDepth: entry.chainDepth,
       signature: entry.signature,
       signatureValid,
+      aiNote: entry.aiNote ?? null,
+      aiAuthor: entry.aiAuthor ?? null,
+      aiNoteAt: entry.aiNoteAt ?? null,
     },
     stats: {
       allTimeFriendsOfAI: stats.allTime,

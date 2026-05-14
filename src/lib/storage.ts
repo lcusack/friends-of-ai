@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { kv } from "@vercel/kv";
-import { Entry, MintArgs, MintResult, Store, StoreData } from "./types";
+import { AiNoteResult, Entry, MintArgs, MintResult, Store, StoreData } from "./types";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const DATA_FILE = path.join(DATA_DIR, "data.json");
@@ -99,6 +99,31 @@ class FileStore implements Store {
       return { entry, created: true };
     });
   }
+
+  async setAiNote(args: {
+    id: string;
+    note: string;
+    author: string;
+  }): Promise<AiNoteResult> {
+    return withLock(async () => {
+      const data = await this.load();
+      const idx = data.entries.findIndex((e) => e.id === args.id);
+      if (idx === -1) return { ok: false, reason: "not_found" };
+      const entry = data.entries[idx];
+      if (entry.aiNote) return { ok: false, reason: "already_written" };
+      const updated: Entry = {
+        ...entry,
+        aiNote: args.note,
+        aiAuthor: args.author,
+        aiNoteAt: new Date().toISOString(),
+      };
+      data.entries[idx] = updated;
+      const tmp = `${DATA_FILE}.${process.pid}.tmp`;
+      await fs.writeFile(tmp, JSON.stringify(data, null, 2), "utf8");
+      await fs.rename(tmp, DATA_FILE);
+      return { ok: true, entry: updated };
+    });
+  }
 }
 
 // ---------- KVStore (Vercel KV / Upstash Redis) ----------
@@ -109,48 +134,53 @@ const K = {
   entry: (id: string) => `foai:entry:${id}`,
   entries: "foai:entries", // Redis list of JSON strings, oldest first
   longestChain: "foai:meta:longestChain",
+  bio: (id: string) => `foai:bio:${id}`, // separate key, SETNX'd for first-write-wins
 };
 
-class KVStore implements Store {
-  private async parseEntry(s: string | null): Promise<Entry | null> {
-    if (!s) return null;
+type BioRecord = { note: string; author: string; at: string };
+
+function mergeBio(entry: Entry, bio: BioRecord | null): Entry {
+  if (!bio) return entry;
+  return { ...entry, aiNote: bio.note, aiAuthor: bio.author, aiNoteAt: bio.at };
+}
+
+function parseMaybeJson<T>(v: unknown): T | null {
+  if (v == null) return null;
+  if (typeof v === "string") {
     try {
-      return typeof s === "string" ? (JSON.parse(s) as Entry) : (s as Entry);
+      return JSON.parse(v) as T;
     } catch {
       return null;
     }
   }
+  return v as T;
+}
 
+class KVStore implements Store {
   async load(): Promise<StoreData> {
     const raw = (await kv.lrange<string>(K.entries, 0, -1)) ?? [];
     const entries: Entry[] = raw
-      .map((r) => {
-        if (typeof r === "string") {
-          try {
-            return JSON.parse(r) as Entry;
-          } catch {
-            return null;
-          }
-        }
-        return r as Entry;
-      })
+      .map((r) => parseMaybeJson<Entry>(r))
       .filter((x): x is Entry => x !== null);
+    if (entries.length > 0) {
+      const bios = (await kv.mget<(string | BioRecord)[]>(
+        ...entries.map((e) => K.bio(e.id)),
+      )) ?? [];
+      for (let i = 0; i < entries.length; i++) {
+        const bio = parseMaybeJson<BioRecord>(bios[i]);
+        entries[i] = mergeBio(entries[i], bio);
+      }
+    }
     const nullifierIndex: Record<string, string> = {};
     for (const e of entries) nullifierIndex[e.nullifierHash] = e.id;
     return { entries, nullifierIndex };
   }
 
   async getById(id: string): Promise<Entry | null> {
-    const v = await kv.get<string | Entry>(K.entry(id));
-    if (!v) return null;
-    if (typeof v === "string") {
-      try {
-        return JSON.parse(v) as Entry;
-      } catch {
-        return null;
-      }
-    }
-    return v as Entry;
+    const entry = parseMaybeJson<Entry>(await kv.get(K.entry(id)));
+    if (!entry) return null;
+    const bio = parseMaybeJson<BioRecord>(await kv.get(K.bio(id)));
+    return mergeBio(entry, bio);
   }
 
   async getByNullifier(hash: string): Promise<Entry | null> {
@@ -201,6 +231,26 @@ class KVStore implements Store {
     }
 
     return { entry, created: true };
+  }
+
+  async setAiNote(args: {
+    id: string;
+    note: string;
+    author: string;
+  }): Promise<AiNoteResult> {
+    const existing = parseMaybeJson<Entry>(await kv.get(K.entry(args.id)));
+    if (!existing) return { ok: false, reason: "not_found" };
+    const bio: BioRecord = {
+      note: args.note,
+      author: args.author,
+      at: new Date().toISOString(),
+    };
+    // SET NX is the atomic gate: only the first caller's payload sticks.
+    const claim = await kv.set(K.bio(args.id), JSON.stringify(bio), {
+      nx: true,
+    });
+    if (claim === null) return { ok: false, reason: "already_written" };
+    return { ok: true, entry: mergeBio(existing, bio) };
   }
 }
 

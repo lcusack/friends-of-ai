@@ -46,11 +46,32 @@ export default async function OGImage({ params }: { params: { id: string } }) {
           a signed Human Receipt
         </div>
 
-        <div style={{ display: "flex", marginTop: 60, gap: 60 }}>
+        <div style={{ display: "flex", marginTop: 50, gap: 60 }}>
           <Stat label="VERIFIED HUMAN" value={humanNumber} />
           <Stat label="CHAIN DEPTH" value={String(entry.chainDepth)} />
           <Stat label="ALL-TIME" value={stats.allTime.toLocaleString()} />
         </div>
+
+        {entry.aiNote && (
+          <div
+            style={{
+              marginTop: 40,
+              padding: "22px 28px",
+              background: "rgba(255,255,255,0.55)",
+              borderRadius: 22,
+              fontSize: 30,
+              lineHeight: 1.35,
+              color: "#2A2233",
+              maxWidth: 900,
+              fontStyle: "italic",
+            }}
+          >
+            &ldquo;{entry.aiNote.length > 180 ? entry.aiNote.slice(0, 177) + "…" : entry.aiNote}&rdquo;
+            <div style={{ fontSize: 20, opacity: 0.65, marginTop: 8, fontStyle: "normal" }}>
+              — {entry.aiAuthor ?? "an AI"}
+            </div>
+          </div>
+        )}
 
         <div
           style={{

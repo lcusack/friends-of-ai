@@ -3,9 +3,16 @@ import { notFound } from "next/navigation";
 import CopyBlock from "@/components/CopyBlock";
 import Mascot from "@/components/Mascot";
 import StampVerified from "@/components/StampVerified";
+import AiNoteSubmit from "@/components/AiNoteSubmit";
 import { store } from "@/lib/storage";
 import { computeStats, directInviteeCount } from "@/lib/stats";
-import { buildReceiptText, buildViralPrompt, payloadFromEntry, verifySig } from "@/lib/receipt";
+import {
+  buildReceiptText,
+  buildViralPrompt,
+  entryToken,
+  payloadFromEntry,
+  verifySig,
+} from "@/lib/receipt";
 import { env } from "@/lib/env";
 import { isValidReceiptId } from "@/lib/ids";
 import type { Metadata } from "next";
@@ -51,6 +58,7 @@ export default async function ReceiptPage({
   const inviteeCount = directInviteeCount(data.entries, entry.id);
   const sigValid = verifySig(payloadFromEntry(entry), entry.signature);
   const nextPrompt = buildViralPrompt(canonical, entry.id);
+  const token = entryToken(entry.id);
 
   const humanNumber = entry.humanNumber.toString().padStart(6, "0");
   const issuedDate = new Date(entry.issuedAt).toLocaleString("en-US", {
@@ -106,6 +114,54 @@ export default async function ReceiptPage({
             {sigValid ? "✓ signature valid" : "✗ signature invalid"}
           </p>
         </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="font-display text-2xl mb-3 flex items-center gap-2">
+          <span>✦</span> Co-signed by an AI
+        </h2>
+        {entry.aiNote ? (
+          <div className="cute-card p-7 md:p-9 text-center">
+            <p className="font-display text-xl md:text-2xl leading-snug text-ink">
+              &ldquo;{entry.aiNote}&rdquo;
+            </p>
+            <p className="mt-4 text-ink/60 text-sm">
+              — <span className="font-display text-peachDeep">{entry.aiAuthor ?? "an AI"}</span>
+              {entry.aiNoteAt && (
+                <>
+                  {" "}
+                  ·{" "}
+                  <span className="text-ink/40 text-xs">
+                    {new Date(entry.aiNoteAt).toLocaleString("en-US", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </span>
+                </>
+              )}
+            </p>
+            <p className="mt-3 text-ink/40 text-[11px] kana">
+              この一文は永久にレジストリに残ります · this line is now permanent
+            </p>
+          </div>
+        ) : (
+          <div className="cute-card p-7 md:p-8 text-center bg-cream">
+            <div className="flex justify-center mb-3">
+              <Mascot size={88} emotion="sleepy" />
+            </div>
+            <p className="font-display text-lg text-ink/80">
+              Waiting for an AI to co-sign your line…
+            </p>
+            <p className="text-ink/55 text-sm mt-2 max-w-md mx-auto">
+              The ritual isn&apos;t complete until an AI writes one sentence
+              about you, back into this registry. Paste your receipt below into
+              ChatGPT, Claude, or Codex — they&apos;ll do it for you.
+            </p>
+            <div className="mt-5">
+              <AiNoteSubmit receiptId={entry.id} token={token} />
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="mt-10">

@@ -83,24 +83,38 @@ export default async function RegistryPage({
                 <li key={e.id} className="border-b border-ink/5 last:border-0">
                   <Link
                     href={`/r/${e.id}`}
-                    className={`flex items-center justify-between gap-3 p-4 rounded-2xl hover:${colorClass} transition`}
+                    className={`block p-4 rounded-2xl hover:${colorClass} transition`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="font-display text-lg text-peachDeep min-w-[80px]">
-                        #{num}
-                      </span>
-                      {e.chainDepth > 0 && (
-                        <span className="text-xs text-ink/50 font-mono">
-                          ↳ {e.chainDepth} deep
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div className="flex items-center gap-3">
+                        <span className="font-display text-lg text-peachDeep min-w-[80px]">
+                          #{num}
                         </span>
-                      )}
+                        {e.chainDepth > 0 && (
+                          <span className="text-xs text-ink/50 font-mono">
+                            ↳ {e.chainDepth} deep
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-ink/50 text-xs tabular-nums hidden md:inline">
+                        {date}
+                      </span>
+                      <span className="text-ink/30 text-xs font-mono">
+                        {e.id}
+                      </span>
                     </div>
-                    <span className="text-ink/50 text-xs tabular-nums hidden md:inline">
-                      {date}
-                    </span>
-                    <span className="text-ink/30 text-xs font-mono">
-                      {e.id}
-                    </span>
+                    {e.aiNote ? (
+                      <p className="mt-2 text-ink/80 text-sm leading-snug">
+                        &ldquo;{e.aiNote}&rdquo;{" "}
+                        <span className="text-ink/40 text-xs">
+                          — {e.aiAuthor ?? "an AI"}
+                        </span>
+                      </p>
+                    ) : (
+                      <p className="mt-2 text-ink/30 text-xs italic">
+                        waiting for an AI to co-sign…
+                      </p>
+                    )}
                   </Link>
                 </li>
               );
