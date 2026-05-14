@@ -7,6 +7,40 @@ export const runtime = "nodejs";
 export const contentType = "image/png";
 export const size = { width: 1200, height: 630 };
 
+function Tomo({ size, thumbsUp = true, rotate = -8 }: {
+  size: number;
+  thumbsUp?: boolean;
+  rotate?: number;
+}) {
+  const arms = thumbsUp
+    ? [
+        <path key="rarm" d="M84 58 Q92 48 90 38" stroke="#2A2233" strokeWidth="2.6" fill="none" strokeLinecap="round" />,
+        <circle key="fist" cx="90" cy="34" r="5.5" fill="#FFD7C2" stroke="#2A2233" strokeWidth="2" />,
+        <path key="thumb" d="M90 29 L90 22" stroke="#2A2233" strokeWidth="2.6" fill="none" strokeLinecap="round" />,
+      ]
+    : [
+        <path key="rarm" d="M84 60 Q90 64 86 70" stroke="#2A2233" strokeWidth="2.6" fill="none" strokeLinecap="round" />,
+      ];
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" style={{ transform: `rotate(${rotate}deg)` }}>
+      <ellipse cx="50" cy="92" rx="28" ry="4" fill="#2A2233" opacity="0.1" />
+      <path d="M50 12 C72 12, 86 28, 86 50 C86 74, 70 90, 50 90 C30 90, 14 74, 14 50 C14 28, 28 12, 50 12 Z" fill="#FFC9A8" stroke="#2A2233" strokeWidth="2.6" />
+      <circle cx="50" cy="22" r="2.4" fill="#FFE5A6" />
+      <circle cx="36" cy="48" r="7" fill="white" stroke="#2A2233" strokeWidth="2" />
+      <circle cx="64" cy="48" r="7" fill="white" stroke="#2A2233" strokeWidth="2" />
+      <circle cx="36" cy="48" r="3.2" fill="#2A2233" />
+      <circle cx="64" cy="48" r="3.2" fill="#2A2233" />
+      <circle cx="37" cy="47" r="1" fill="white" />
+      <circle cx="65" cy="47" r="1" fill="white" />
+      <ellipse cx="32" cy="62" rx="6" ry="3.5" fill="#FFB0C2" opacity="0.85" />
+      <ellipse cx="68" cy="62" rx="6" ry="3.5" fill="#FFB0C2" opacity="0.85" />
+      <path d="M40 64 Q50 76 60 64" stroke="#2A2233" strokeWidth="3" fill="#FF9BB3" strokeLinecap="round" />
+      <path d="M16 60 Q10 64 14 70" stroke="#2A2233" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      {arms}
+    </svg>
+  );
+}
+
 export default async function OGImage({ params }: { params: { id: string } }) {
   if (!isValidReceiptId(params.id)) {
     return new ImageResponse(<div>Friends of AI</div>, size);
@@ -36,8 +70,12 @@ export default async function OGImage({ params }: { params: { id: string } }) {
         }}
       >
         <div style={{ position: "absolute", top: 50, left: 60, width: 22, height: 22, borderRadius: 9999, background: "#E89876", opacity: 0.55, display: "flex" }} />
-        <div style={{ position: "absolute", top: 90, right: 90, width: 16, height: 16, borderRadius: 9999, background: "#FFB0C2", opacity: 0.75, display: "flex" }} />
         <div style={{ position: "absolute", bottom: 60, left: 90, width: 18, height: 18, borderRadius: 9999, background: "#FFD1E0", opacity: 0.85, display: "flex" }} />
+
+        {/* Tomo-chan in the upper-right giving a thumbs up if co-signed */}
+        <div style={{ position: "absolute", top: 30, right: 40, display: "flex" }}>
+          <Tomo size={140} thumbsUp={Boolean(note)} rotate={note ? -8 : 0} />
+        </div>
 
         {/* Left: number + label */}
         <div

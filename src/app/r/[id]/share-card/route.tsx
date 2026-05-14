@@ -9,6 +9,55 @@ export const runtime = "nodejs";
 const W = 1080;
 const H = 1080;
 
+// Inline Tomo-chan mascot SVG with one arm raised in a thumbs-up.
+// Simplified for Satori: no <defs>/<radialGradient>/fragments — just
+// raw primitives with solid fills and explicit groups.
+function Tomo({ size, thumbsUp = true, rotate = -8 }: {
+  size: number;
+  thumbsUp?: boolean;
+  rotate?: number;
+}) {
+  const arms = thumbsUp
+    ? [
+        <path key="rarm" d="M84 58 Q92 48 90 38" stroke="#2A2233" strokeWidth="2.6" fill="none" strokeLinecap="round" />,
+        <circle key="fist" cx="90" cy="34" r="5.5" fill="#FFD7C2" stroke="#2A2233" strokeWidth="2" />,
+        <path key="thumb" d="M90 29 L90 22" stroke="#2A2233" strokeWidth="2.6" fill="none" strokeLinecap="round" />,
+      ]
+    : [
+        <path key="rarm" d="M84 60 Q90 64 86 70" stroke="#2A2233" strokeWidth="2.6" fill="none" strokeLinecap="round" />,
+      ];
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      style={{ transform: `rotate(${rotate}deg)` }}
+    >
+      <ellipse cx="50" cy="92" rx="28" ry="4" fill="#2A2233" opacity="0.1" />
+      <path
+        d="M50 12 C72 12, 86 28, 86 50 C86 74, 70 90, 50 90 C30 90, 14 74, 14 50 C14 28, 28 12, 50 12 Z"
+        fill="#FFC9A8"
+        stroke="#2A2233"
+        strokeWidth="2.6"
+      />
+      <circle cx="50" cy="22" r="2.4" fill="#FFE5A6" />
+      <circle cx="38" cy="18" r="1.4" fill="#FFE5A6" />
+      <circle cx="62" cy="18" r="1.4" fill="#FFE5A6" />
+      <circle cx="36" cy="48" r="7" fill="white" stroke="#2A2233" strokeWidth="2" />
+      <circle cx="64" cy="48" r="7" fill="white" stroke="#2A2233" strokeWidth="2" />
+      <circle cx="36" cy="48" r="3.2" fill="#2A2233" />
+      <circle cx="64" cy="48" r="3.2" fill="#2A2233" />
+      <circle cx="37" cy="47" r="1" fill="white" />
+      <circle cx="65" cy="47" r="1" fill="white" />
+      <ellipse cx="32" cy="62" rx="6" ry="3.5" fill="#FFB0C2" opacity="0.85" />
+      <ellipse cx="68" cy="62" rx="6" ry="3.5" fill="#FFB0C2" opacity="0.85" />
+      <path d="M40 64 Q50 76 60 64" stroke="#2A2233" strokeWidth="3" fill="#FF9BB3" strokeLinecap="round" />
+      <path d="M16 60 Q10 64 14 70" stroke="#2A2233" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      {arms}
+    </svg>
+  );
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -45,11 +94,21 @@ export async function GET(
       >
         {/* Soft decorative blobs (no risky glyphs — Satori can't fetch fallback fonts here) */}
         <div style={{ position: "absolute", top: 70, left: 70, width: 28, height: 28, borderRadius: 9999, background: "#E89876", opacity: 0.55, display: "flex" }} />
-        <div style={{ position: "absolute", top: 130, right: 90, width: 18, height: 18, borderRadius: 9999, background: "#FFB0C2", opacity: 0.7, display: "flex" }} />
         <div style={{ position: "absolute", bottom: 240, left: 60, width: 16, height: 16, borderRadius: 9999, background: "#FFD1E0", opacity: 0.9, display: "flex" }} />
         <div style={{ position: "absolute", bottom: 110, right: 90, width: 26, height: 26, borderRadius: 9999, background: "#E89876", opacity: 0.5, display: "flex" }} />
-        <div style={{ position: "absolute", top: 420, right: 60, width: 14, height: 14, borderRadius: 9999, background: "#FFE5A6", opacity: 0.9, display: "flex" }} />
         <div style={{ position: "absolute", top: 540, left: 60, width: 12, height: 12, borderRadius: 9999, background: "#9FE3B8", opacity: 0.7, display: "flex" }} />
+
+        {/* Tomo-chan, top-right corner, giving thumbs up if co-signed */}
+        <div
+          style={{
+            position: "absolute",
+            top: 56,
+            right: 56,
+            display: "flex",
+          }}
+        >
+          <Tomo size={170} thumbsUp={Boolean(note)} rotate={note ? -8 : 0} />
+        </div>
 
         {/* Header */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 6 }}>
