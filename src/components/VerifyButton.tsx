@@ -79,9 +79,14 @@ export default function VerifyButton({ appId, action, inviteId, mockEnabled }: P
           inviteId,
         }),
       });
-      const data = (await res.json()) as { receiptId?: string; error?: string };
+      const data = (await res.json()) as {
+        receiptId?: string;
+        error?: string;
+        debug?: Record<string, unknown>;
+      };
       if (!res.ok || !data.receiptId) {
-        const msg = data.error ?? `HTTP ${res.status}`;
+        const debugStr = data.debug ? ` — got: ${JSON.stringify(data.debug)}` : "";
+        const msg = `${data.error ?? `HTTP ${res.status}`}${debugStr}`;
         setStatus("error");
         setError(msg);
         throw new Error(msg);

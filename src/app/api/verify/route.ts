@@ -35,7 +35,25 @@ export async function POST(req: NextRequest) {
 
   const result = await verifyProof(body.idkitResponse ?? null);
   if (!result.ok) {
-    return NextResponse.json({ error: result.error }, { status: 400 });
+    // Include a redacted echo of what we received so we can diagnose shape
+    // mismatches without spelunking through serverless logs.
+    const received = body.idkitResponse;
+    const shape: Record<string, unknown> = {};
+    if (received && typeof received === "object") {
+      for (const k of Object.keys(received)) {
+        const v = (received as Record<string, unknown>)[k];
+        if (Array.isArray(v)) {
+          shape[k] = v.length === 0 ? "[]" : `array(len=${v.length}, keys=${Object.keys(v[0] ?? {}).join("|")})`;
+        } else if (v && typeof v === "object") {
+          shape[k] = `object(keys=${Object.keys(v).join("|")})`;
+        } else {
+          shape[k] = typeof v === "string" ? v.slice(0, 40) : typeof v;
+        }
+      }
+    } else {
+      shape["__top__"] = received === null ? "null" : typeof received;
+    }
+    return NextResponse.json({ error: result.error, debug: shape }, { status: 400 });
   }
 
   const { entry, created } = await store.mintOrGet({
