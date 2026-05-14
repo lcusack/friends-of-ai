@@ -69,10 +69,31 @@ export default function AiNoteSubmit({ receiptId, token }: Props) {
         <textarea
           className="mt-1 w-full rounded-2xl border-2 border-ink/10 p-3 text-sm font-body bg-cream focus:border-peachDeep focus:outline-none"
           rows={3}
-          maxLength={MAX_BIO}
+          maxLength={MAX_BIO * 4}
           value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          placeholder="The AI's introduction of you…"
+          onChange={(e) => {
+            const v = e.target.value;
+            // If the user pasted a JSON payload (the AI's recommended format),
+            // auto-extract bio and author. Tolerate ```json fences.
+            const cleaned = v
+              .replace(/```(?:json)?\s*/gi, "")
+              .replace(/```\s*$/g, "")
+              .trim();
+            if (cleaned.startsWith("{") && cleaned.endsWith("}")) {
+              try {
+                const obj = JSON.parse(cleaned);
+                if (typeof obj.bio === "string" && typeof obj.author === "string") {
+                  setBio(obj.bio.slice(0, MAX_BIO));
+                  setAuthor(obj.author.slice(0, MAX_AUTHOR));
+                  return;
+                }
+              } catch {
+                /* fall through to plain text */
+              }
+            }
+            setBio(v.slice(0, MAX_BIO));
+          }}
+          placeholder="The AI's one sentence — or paste the whole JSON block they gave you."
           disabled={status === "submitting" || status === "ok"}
         />
       </label>
