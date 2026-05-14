@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background: linear-gradient(180deg, #FFF8EC 0%, #FFEFE2 100%);
+  color: #2A2233;
+}
+
+body {
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+.cute-card {
+  background: white;
+  border: 2px solid rgba(42, 34, 51, 0.08);
+  border-radius: 28px;
+  box-shadow: 0 8px 0 0 rgba(42, 34, 51, 0.06), 0 2px 6px rgba(42, 34, 51, 0.06);
+}
+
+.cute-button {
+  font-family: var(--font-display), ui-rounded, system-ui, sans-serif;
+  background: #2A2233;
+  color: #FFF8EC;
+  padding: 0.95rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.18);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cute-button:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.18);
+}
+
+.cute-button.peach {
+  background: #FFB89A;
+  color: #2A2233;
+  box-shadow: 0 6px 0 0 #E89876;
+}
+
+.cute-button.mint {
+  background: #9FE3B8;
+  color: #2A2233;
+  box-shadow: 0 6px 0 0 #74C896;
+}
+
+.cute-button.sky {
+  background: #A6D2FF;
+  color: #2A2233;
+  box-shadow: 0 6px 0 0 #7AB4EC;
+}
+
+.dotted-divider {
+  border-top: 3px dotted rgba(42, 34, 51, 0.15);
+}
+
+.receipt-pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre;
+  font-size: 13px;
+  line-height: 1.55;
+  background: #FFF8EC;
+  border: 2px dashed rgba(42, 34, 51, 0.18);
+  border-radius: 18px;
+  padding: 18px;
+  overflow-x: auto;
+  color: #2A2233;
+}
+
+.kana {
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", system-ui, sans-serif;
+}
+
+.sparkle {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-bounceSoft,
+  .animate-wiggle,
+  .animate-pop,
+  .animate-floaty {
+    animation: none !important;
+  }
+}
