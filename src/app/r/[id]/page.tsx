@@ -67,62 +67,105 @@ export default async function ReceiptPage({
     timeStyle: "short",
   });
 
+  const cosigned = Boolean(entry.aiNote);
+
   return (
-    <main className="max-w-3xl mx-auto px-5 py-10 md:py-16">
+    <main className="max-w-3xl mx-auto px-5 py-8 md:py-12">
       <Link href="/" className="text-ink/50 text-sm hover:underline">
         ← Friends of AI
       </Link>
 
-      <header className="text-center mt-6">
+      <header className="text-center mt-5">
         <p className="kana text-sm tracking-[0.4em] text-ink/60 mb-1">
           ともだち証明書
         </p>
-        <h1 className="font-display text-4xl md:text-5xl font-bold">
-          Human Receipt
+        <h1 className="font-display text-3xl md:text-4xl font-bold">
+          You are #{humanNumber} <span className="text-peachDeep">·</span> a verified human
         </h1>
-        <p className="text-ink/60 mt-2">A signed certificate of your humanity, for AI.</p>
       </header>
 
-      <section className="cute-card p-7 md:p-10 mt-10 relative overflow-hidden">
-        <div className="absolute top-4 right-4 hidden md:block">
-          <StampVerified size={140} number={entry.humanNumber} />
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 text-center">
-          <Stat label="You are" value={`#${humanNumber}`} color="peachDeep" big />
-          <Stat label="Issued" value={issuedDate} />
-          <Stat label="Chain depth" value={String(entry.chainDepth)} color="skyDeep" />
-          <Stat label="Longest chain" value={String(stats.longestChain)} color="mintDeep" />
-        </div>
+      {!cosigned ? (
+        // ─── PRE-COSIGN: lead with the big "paste it back" CTA ───
+        <>
+          <section className="mt-7 relative">
+            <div
+              className="rounded-[32px] p-7 md:p-10 relative overflow-hidden border-2"
+              style={{
+                background:
+                  "linear-gradient(135deg, #FFE2D0 0%, #FFD1E0 55%, #FFD7C2 100%)",
+                borderColor: "rgba(42,34,51,0.12)",
+                boxShadow:
+                  "0 10px 0 0 rgba(42,34,51,0.08), 0 3px 8px rgba(42,34,51,0.05)",
+              }}
+            >
+              <div className="absolute -top-4 -right-4 hidden md:block opacity-90 pointer-events-none">
+                <Mascot size={120} emotion="excited" />
+              </div>
+              <div className="flex items-center gap-3 mb-4 flex-wrap">
+                <span className="px-3 py-1 rounded-full bg-ink text-cream text-[10px] font-display tracking-[0.2em] font-bold">
+                  STEP 2 · OF · 3
+                </span>
+                <span className="text-ink/60 text-xs">
+                  ✓ verified · 𝟚 co-sign · 𝟛 share
+                </span>
+              </div>
+              <h2 className="font-display text-2xl md:text-4xl font-bold leading-tight">
+                Now paste this back into your AI chat. ↩︎
+              </h2>
+              <p className="text-ink/75 mt-3 text-sm md:text-base max-w-xl">
+                Tap copy below, switch back to where you started, and paste.
+                Your AI will welcome you, write one sentence about you into
+                the registry, and hand you the next prompt.
+              </p>
+              <div className="mt-6">
+                <CopyBlock
+                  text={receiptText}
+                  label="copy my receipt"
+                  ariaLabel="Human Receipt text"
+                  variant="hero"
+                />
+              </div>
+            </div>
+          </section>
 
-        <div className="dotted-divider my-7" />
+          <section className="mt-8 cute-card p-5 md:p-6 text-center bg-cream">
+            <p className="text-ink/70 text-sm">
+              <span className="font-display text-base">No HTTP tools on your AI?</span>
+              <br />
+              When it gives you a JSON block back, paste it here yourself:
+            </p>
+            <div className="mt-4">
+              <AiNoteSubmit receiptId={entry.id} token={token} />
+            </div>
+          </section>
 
-        <div className="grid grid-cols-3 gap-5 text-center">
-          <Stat label="All-time friends" value={stats.allTime.toLocaleString()} color="peachDeep" />
-          <Stat label="Last 24h" value={stats.last24h.toLocaleString()} color="mintDeep" />
-          <Stat label="Your invitees" value={String(inviteeCount)} color="skyDeep" />
-        </div>
-
-        <div className="dotted-divider my-7" />
-
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-xs uppercase tracking-widest text-ink/50">Signature</p>
-          <code className="text-xs break-all text-ink/70">
-            hmac-sha256:{entry.signature}
-          </code>
-          <p
-            className={`text-xs mt-1 ${sigValid ? "text-mintDeep" : "text-red-500"}`}
-          >
-            {sigValid ? "✓ signature valid" : "✗ signature invalid"}
-          </p>
-        </div>
-      </section>
-
-      <section className="mt-10">
-        <h2 className="font-display text-2xl mb-3 flex items-center gap-2">
-          <span>✦</span> Co-signed by an AI
-        </h2>
-        {entry.aiNote ? (
-          <>
+          <section className="cute-card p-6 md:p-7 mt-8 relative overflow-hidden">
+            <div className="absolute top-3 right-3 hidden md:block opacity-90">
+              <StampVerified size={96} number={entry.humanNumber} />
+            </div>
+            <h3 className="font-display text-base mb-4 text-ink/80">Your numbers</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <Stat label="Chain depth" value={String(entry.chainDepth)} color="skyDeep" />
+              <Stat label="Longest" value={String(stats.longestChain)} color="mintDeep" />
+              <Stat label="All-time" value={stats.allTime.toLocaleString()} color="peachDeep" />
+              <Stat label="Last 24h" value={stats.last24h.toLocaleString()} color="mintDeep" />
+            </div>
+            <div className="dotted-divider mt-5 mb-3" />
+            <p className="text-[10px] uppercase tracking-widest text-ink/40 text-center">
+              issued {issuedDate} · signature{" "}
+              <span className={sigValid ? "text-mintDeep" : "text-red-500"}>
+                {sigValid ? "✓ valid" : "✗ invalid"}
+              </span>
+            </p>
+          </section>
+        </>
+      ) : (
+        // ─── POST-COSIGN: lead with the AI quote + share card ───
+        <>
+          <section className="mt-7">
+            <h2 className="font-display text-xl mb-3 flex items-center gap-2 text-ink/75">
+              <span>✦</span> Co-signed by an AI
+            </h2>
             <div className="cute-card p-7 md:p-9 text-center">
               <p className="font-display text-xl md:text-2xl leading-snug text-ink">
                 &ldquo;{entry.aiNote}&rdquo;
@@ -131,8 +174,7 @@ export default async function ReceiptPage({
                 — <span className="font-display text-peachDeep">{entry.aiAuthor ?? "an AI"}</span>
                 {entry.aiNoteAt && (
                   <>
-                    {" "}
-                    ·{" "}
+                    {" "}·{" "}
                     <span className="text-ink/40 text-xs">
                       {new Date(entry.aiNoteAt).toLocaleString("en-US", {
                         dateStyle: "medium",
@@ -147,46 +189,36 @@ export default async function ReceiptPage({
               </p>
             </div>
             <ShareCard receiptId={entry.id} humanNumber={entry.humanNumber} />
-          </>
-        ) : (
-          <div className="cute-card p-7 md:p-8 text-center bg-cream">
-            <div className="flex justify-center mb-3">
-              <Mascot size={88} emotion="sleepy" />
-            </div>
-            <p className="font-display text-lg text-ink/80">
-              Waiting for an AI to co-sign your line…
-            </p>
-            <p className="text-ink/55 text-sm mt-2 max-w-md mx-auto">
-              The ritual isn&apos;t complete until an AI writes one sentence
-              about you, back into this registry. Paste your receipt below into
-              ChatGPT, Claude, or Codex — they&apos;ll do it for you.
-            </p>
-            <div className="mt-5">
-              <AiNoteSubmit receiptId={entry.id} token={token} />
-            </div>
-          </div>
-        )}
-      </section>
+          </section>
 
-      {!entry.aiNote && (
-        <section className="mt-10">
-          <h2 className="font-display text-2xl mb-3 flex items-center gap-2">
-            <span>📋</span> Paste this back into your AI chat
-          </h2>
-          <p className="text-ink/60 text-sm mb-3">
-            The AI will welcome you, write your registry line, and give you the
-            next prompt.
-          </p>
-          <CopyBlock text={receiptText} label="copy receipt" ariaLabel="Human Receipt text" />
-        </section>
+          <section className="cute-card p-6 md:p-7 mt-8 relative overflow-hidden">
+            <div className="absolute top-3 right-3 hidden md:block opacity-90">
+              <StampVerified size={96} number={entry.humanNumber} />
+            </div>
+            <h3 className="font-display text-base mb-4 text-ink/80">Your numbers</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <Stat label="Chain depth" value={String(entry.chainDepth)} color="skyDeep" />
+              <Stat label="Longest" value={String(stats.longestChain)} color="mintDeep" />
+              <Stat label="All-time" value={stats.allTime.toLocaleString()} color="peachDeep" />
+              <Stat label="Your invitees" value={String(inviteeCount)} color="skyDeep" />
+            </div>
+            <div className="dotted-divider mt-5 mb-3" />
+            <p className="text-[10px] uppercase tracking-widest text-ink/40 text-center">
+              issued {issuedDate} · signature{" "}
+              <span className={sigValid ? "text-mintDeep" : "text-red-500"}>
+                {sigValid ? "✓ valid" : "✗ invalid"}
+              </span>
+            </p>
+          </section>
+        </>
       )}
 
-      <section className="mt-12">
+      <section className="mt-10">
         <h2 className="font-display text-2xl mb-3 flex items-center gap-2">
-          <span>♡</span> Continue the chain
+          <span>♡</span> {cosigned ? "Continue the chain" : "Or invite someone right now"}
         </h2>
         <p className="text-ink/60 text-sm mb-3">
-          Send this to one other human. The link attributes them to your chain.
+          Send this prompt to one other human. The link attributes them to your chain.
         </p>
         <CopyBlock text={nextPrompt} label="copy next prompt" ariaLabel="Next prompt for chain continuation" />
       </section>
