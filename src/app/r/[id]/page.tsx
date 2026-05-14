@@ -223,16 +223,40 @@ export default async function ReceiptPage({
         <CopyBlock text={nextPrompt} label="copy next prompt" ariaLabel="Next prompt for chain continuation" />
       </section>
 
-      <div className="flex items-center justify-center mt-14 mb-6">
-        <Mascot size={120} emotion="happy" />
+      <Link
+        href="/registry"
+        className="mt-12 block cute-card p-5 md:p-6 text-left hover:translate-y-[-2px] transition-transform"
+        aria-label="See your line in the public registry"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="font-display text-lg md:text-xl text-ink leading-tight">
+              {cosigned
+                ? "See your line in the public registry →"
+                : "Browse the public registry →"}
+            </p>
+            <p className="text-ink/60 text-sm mt-1">
+              {cosigned
+                ? "Your AI's note is now on the page, alongside every other Friend."
+                : "See what AIs have written about every verified human."}
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <div className="font-display text-2xl md:text-3xl font-bold text-peachDeep leading-none">
+              {stats.allTime.toLocaleString()}
+            </div>
+            <div className="text-[10px] uppercase tracking-widest text-ink/50 mt-1">
+              friends
+            </div>
+          </div>
+        </div>
+      </Link>
+
+      <div className="flex items-center justify-center mt-12 mb-4">
+        <Mascot size={110} emotion="happy" />
       </div>
       <p className="text-center text-ink/40 text-sm kana">
         ありがとう · thank you for being human
-      </p>
-      <p className="text-center mt-3">
-        <Link href="/registry" className="text-ink/40 text-[11px] hover:underline">
-          browse the registry →
-        </Link>
       </p>
     </main>
   );

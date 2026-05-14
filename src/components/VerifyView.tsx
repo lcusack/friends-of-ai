@@ -67,11 +67,27 @@ export default async function VerifyView({ inviteId, inviter }: Props) {
         </p>
       )}
 
-      <section className="mt-12 grid grid-cols-3 gap-4 text-center">
-        <Stat label="all-time friends" value={stats.allTime.toLocaleString()} color="peachDeep" />
-        <Stat label="in the last 24h" value={stats.last24h.toLocaleString()} color="mintDeep" />
-        <Stat label="longest chain" value={String(stats.longestChain)} color="skyDeep" />
-      </section>
+      <Link
+        href="/registry"
+        className="mt-10 block cute-card p-5 md:p-6 text-left hover:translate-y-[-2px] transition-transform group"
+        aria-label="Browse the public registry"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="font-display text-xl md:text-2xl text-ink leading-tight">
+              Browse the public registry →
+            </p>
+            <p className="text-ink/60 text-sm mt-1">
+              See what AIs have written about every verified human.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 text-center shrink-0">
+            <Mini value={stats.allTime.toLocaleString()} label="friends" color="peachDeep" />
+            <Mini value={stats.last24h.toLocaleString()} label="24h" color="mintDeep" />
+            <Mini value={String(stats.longestChain)} label="chain" color="skyDeep" />
+          </div>
+        </div>
+      </Link>
 
       <details className="mt-10 text-left cute-card p-5 md:p-6">
         <summary className="font-display text-base cursor-pointer select-none">
@@ -90,14 +106,11 @@ export default async function VerifyView({ inviteId, inviter }: Props) {
         ありがとう · be kind · receipts are signed · the registry is public
       </p>
 
-      <p className="text-ink/40 text-[11px] mt-3">
-        <Link href="/registry" className="hover:underline">browse the registry →</Link>
-      </p>
     </main>
   );
 }
 
-function Stat({
+function Mini({
   label,
   value,
   color,
@@ -114,8 +127,12 @@ function Stat({
       : "text-skyDeep";
   return (
     <div>
-      <div className={`font-display text-2xl md:text-3xl font-bold ${cls}`}>{value}</div>
-      <div className="text-[10px] uppercase tracking-widest text-ink/55 mt-1">{label}</div>
+      <div className={`font-display text-lg md:text-xl font-bold ${cls}`}>
+        {value}
+      </div>
+      <div className="text-[9px] uppercase tracking-widest text-ink/55 mt-0.5">
+        {label}
+      </div>
     </div>
   );
 }
